@@ -20,7 +20,7 @@ class InboxMessageList extends StatelessWidget {
             '@zeroid.bit',
             '',
           );
-          var message = Message.fromJson(json.decode(msg.body), from: from);
+          var message = Mail.fromJson(json.decode(msg.body), from: from);
           String subject = message.subject;
           if (subject.isEmpty) {
             subject = 'No Subject';

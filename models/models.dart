@@ -1,14 +1,14 @@
 import '../imports.dart';
 
-class Message {
+class Mail {
   late String subject;
   late String body;
   late String from;
   late String to;
 
-  Message(this.subject, this.body, this.from, this.to);
+  Mail(this.subject, this.body, this.from, this.to);
 
-  Message.fromJson(
+  Mail.fromJson(
     Map<String, dynamic> json, {
     this.from = "",
   }) {
@@ -16,6 +16,11 @@ class Message {
     body = json['body'];
     to = json['to'];
   }
+
+  factory Mail.empty() => Mail('', '', '', '');
+
+  bool get isEmpty =>
+      subject.isEmpty && body.isEmpty && from.isEmpty && to.isEmpty;
 }
 
 class SecretResult {

@@ -11,7 +11,7 @@ class SiteVarController extends GetxController {
   var messagesReceived = <EncryptedMsg>[].obs;
   var messagesSent = <EncryptedMsg>[].obs;
   var messagesReceivedRead = <int>[].obs;
-  var currentMessage = Message("", "", "", "").obs;
+  var currentMessage = Mail.empty().obs;
 
   var routes = [
     Route.inbox,
@@ -25,7 +25,7 @@ class SiteVarController extends GetxController {
   }
 
   void resetCurrentMessage() {
-    currentMessage.value = Message("", "", "", "");
+    currentMessage.value = Mail.empty();
   }
 
   void addContact(String contact) {

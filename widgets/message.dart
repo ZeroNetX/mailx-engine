@@ -6,7 +6,7 @@ class MessageWidget extends StatelessWidget {
     required this.currentMsg,
   }) : super(key: key);
 
-  final Message currentMsg;
+  final Mail currentMsg;
 
   @override
   Widget build(BuildContext context) {

@@ -15,7 +15,7 @@ class SentMessageList extends StatelessWidget {
         shrinkWrap: false,
         itemCount: msgs.length,
         itemBuilder: (context, index) {
-          var message = Message.fromJson(json.decode(msgs[index].body));
+          var message = Mail.fromJson(json.decode(msgs[index].body));
           var to = message.to;
           String show = message.subject;
           return InkWell(
