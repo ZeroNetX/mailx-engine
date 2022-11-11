@@ -24,6 +24,7 @@ export 'pages/zeromailx.dart';
 
 export 'widgets/header.dart';
 export 'widgets/inbox.dart';
+export 'widgets/list_item.dart';
+export 'widgets/message.dart';
 export 'widgets/sent.dart';
 export 'widgets/sidebar.dart';
-export 'widgets/message.dart';

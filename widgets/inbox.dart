@@ -49,60 +49,11 @@ class InboxMessageList extends StatelessWidget {
                 final isRead = siteController.messagesReceivedRead.contains(
                   msg.dateAdded,
                 );
-                return Container(
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? context.theme.primaryColor
-                        : const Color(0xFFF5F4F2),
-                    border: Border.all(
-                      color: Colors.black,
-                      width: 0.1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFe5e4e1),
-                          borderRadius: BorderRadius.circular(
-                            8,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            from[0].toUpperCase(),
-                          ),
-                        ),
-                      ).paddingSymmetric(
-                        horizontal: 16.0,
-                        vertical: 12.0,
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            from,
-                            style: TextStyle(
-                              color: isSelected
-                                  ? Colors.white
-                                  : !isRead
-                                      ? Colors.black
-                                      : Colors.grey,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            subject,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                return MessageListItem(
+                  isSelected: isSelected,
+                  participant: from,
+                  isRead: isRead,
+                  subject: subject,
                 );
               },
             ),
