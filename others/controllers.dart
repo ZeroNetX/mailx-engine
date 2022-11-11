@@ -4,7 +4,7 @@ final siteController = SiteVarController();
 
 class SiteVarController extends GetxController {
   var currentRoute = Route.inbox.obs;
-  var siteInfo = SiteInfo().obs;
+  var siteInfo = Rx<SiteInfo?>(null);
   var isUserLoggedIn = false.obs;
   var contactAddrs = <String>[].obs;
   var contacts = <String, String>{}.obs;

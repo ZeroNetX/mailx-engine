@@ -94,14 +94,14 @@ class User {
 
   Future<void> loadData(String authAddress) async {
     final innerPathStr = innerPath(authAddress);
-    final message = await ZeroNet.instance.fileGetFuture(
+    final msgOrErr = await ZeroNet.instance.fileGetFuture(
       innerPathStr,
       required_: false,
     );
-    if (message.result == null) {
+    if (!msgOrErr.isMsg) {
       return;
     } else {
-      final dataLoaded = json.decode(message.result);
+      final dataLoaded = json.decode(msgOrErr.message!.result);
       assert(dataLoaded is Map);
       data = dataLoaded;
     }
@@ -124,21 +124,21 @@ class User {
     }
     var dataToSave = innerdata;
     var encode = utf8.encode(json.encode(dataToSave));
-    final message = await ZeroNet.instance.fileWriteFuture(
+    final msgOrErr = await ZeroNet.instance.fileWriteFuture(
       innerPathStr,
       base64.encode(encode),
     );
-    if (message.result == null) {
+    if (!msgOrErr.isMsg) {
       return;
     } else {
-      assert(message.result == 'ok');
+      assert(msgOrErr.message!.result == 'ok');
       final messagePublish = await ZeroNet.instance.sitePublishFuture(
         inner_path: innerPathStr,
       );
-      if (messagePublish.result == null) {
+      if (!messagePublish.isMsg) {
         return;
       } else {
-        assert(messagePublish.result == 'ok');
+        assert(messagePublish.message!.result == 'ok');
         return;
       }
     }

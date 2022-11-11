@@ -3,14 +3,14 @@ import '../imports.dart';
 const admin = "1HELLoE3sFD9569CLCbHEAVqvqV7U2Ri9d";
 const site = "1MaiLX6j5MSddyu8oh5CxxGrhMcSmRo6N8";
 
-late Database db;
+late Database? db;
 late StoreRef store;
 
 void init() async {
   db = await getDatabase();
   store = StoreRef.main();
   await ZeroNet.instance.connect(site);
-  final siteInfo = (await ZeroNet.instance.siteInfoFuture()).siteInfo;
+  final siteInfo = (await ZeroNet.instance.siteInfoFuture());
   siteController.updateSiteInfo(siteInfo);
   if (siteInfo.certUserId?.isNotEmpty ?? false) {
     siteController.isUserLoggedIn.value = true;
@@ -42,9 +42,9 @@ decryptNewMsgs(List<SecretResult> msgs) async {
 			ORDER BY date_added ASC
 		""";
   final res = await ZeroNet.instance.dbQueryFuture(query, {});
-  if (res.result != null && res.result.isNotEmpty) {
+  if (res.isMsg && res.message!.result.isNotEmpty) {
     final List<EncryptedMsg> messages = List.from(
-      res.result.map((element) => EncryptedMsg.fromJson(element)),
+      res.message!.result.map((element) => EncryptedMsg.fromJson(element)),
     );
     final aesKeys = msgs.map((element) => element.aesKey!).toList();
     final encrytedMsgs = messages.map((e) => e.encrypted.split(',')).toList();
@@ -61,9 +61,11 @@ decryptNewMsgs(List<SecretResult> msgs) async {
         if (msg != null) {
           messages[i].body = msg;
           siteController.addMessageReceived(messages[i]);
-          var isRead = await store.record('inbox#${messages[i].dateAdded}').get(
-                db,
-              );
+          var isRead = kIsWeb
+              ? false
+              : await store.record('inbox#${messages[i].dateAdded}').get(
+                    db!,
+                  );
           if (isRead == true) {
             siteController.messagesReceivedRead.addIf(
               !siteController.messagesReceivedRead
@@ -78,7 +80,7 @@ decryptNewMsgs(List<SecretResult> msgs) async {
 }
 
 decryptMsgsSent() async {
-  final authAddr = siteController.siteInfo.value.authAddress!;
+  final authAddr = siteController.siteInfo.value!.authAddress!;
   final where = 'WHERE directory = "$authAddr"';
   final query = """
 			SELECT * FROM message
@@ -87,9 +89,9 @@ decryptMsgsSent() async {
 			ORDER BY date_added ASC
 		""";
   final res = await ZeroNet.instance.dbQueryFuture(query);
-  if (res.result != null && res.result.isNotEmpty) {
+  if (res.isMsg && res.message!.result.isNotEmpty) {
     final List<EncryptedMsg> messages = List.from(
-      res.result.map((element) => EncryptedMsg.fromJson(element)),
+      res.message!.result.map((element) => EncryptedMsg.fromJson(element)),
     );
     final user = User("", "");
     await user.loadData(authAddr);
@@ -141,9 +143,9 @@ Future<List<SecretResult>?> decrypyNewSecrets([
 			ORDER BY date_added ASC
 		""";
   var res = await ZeroNet.instance.dbQueryFuture(query, {});
-  if (res.result is List) {
+  if (res.isMsg && res.message!.result is List) {
     var rows = List<SecretResult>.from(
-      res.result
+      res.message!.result
           .map(
             (e) => SecretResult.fromJson(e),
           )
@@ -165,10 +167,10 @@ Future<List<SecretResult>?> decrypyNewSecrets([
 
 void getArchived() async {
   final message = await ZeroNet.instance.fileGetFuture('data/archived.json');
-  if (message.result == null) {
+  if (!message.isMsg) {
     return;
   } else {
-    var res = message.result;
+    var res = message.message!.result;
     print(res);
   }
 }
@@ -183,10 +185,10 @@ Future<void> getUsernames(List<String> addrs) async {
   final message = await ZeroNet.instance.dbQueryFuture(query, {
     "directory": addrs,
   });
-  if (message.result == null) {
+  if (!message.isMsg) {
     return;
   } else {
-    var res = message.result;
+    var res = message.message!.result;
     for (var i = 0; i < res?.length; i++) {
       siteController.contacts[res[i]['directory']] = res[i]['cert_user_id'];
     }

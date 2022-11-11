@@ -29,9 +29,11 @@ class InboxMessageList extends StatelessWidget {
           }
           return InkWell(
             onTap: () async {
-              var isRead = await store.record('inbox#${msg.dateAdded}').get(db);
+              var isRead = kIsWeb
+                  ? true
+                  : await store.record('inbox#${msg.dateAdded}').get(db!);
               if (isRead == null || isRead == false) {
-                await store.record('inbox#${msg.dateAdded}').put(db, true);
+                await store.record('inbox#${msg.dateAdded}').put(db!, true);
               } else {
                 siteController.messagesReceivedRead.addIf(
                   !siteController.messagesReceivedRead.contains(msg.dateAdded),
