@@ -11,7 +11,10 @@ class HomePage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SidebarWidget(),
+        LayoutBuilder(builder: (ctx, cons) {
+          var width = MediaQuery.of(context).size.width;
+          return SidebarWidget(extended: width > 800);
+        }),
         Flexible(
           flex: 3,
           child: Obx(

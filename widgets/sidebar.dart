@@ -6,7 +6,9 @@ const scaffoldBackgroundColor = Color(0xFF464667);
 const accentCanvasColor = Color(0xFF3E3E61);
 const white = Colors.white;
 
-final sidebarXController = SidebarXController(selectedIndex: 0, extended: true);
+SidebarXController sidebarXController(bool extended) =>
+    SidebarXController(selectedIndex: 0, extended: extended);
+
 final actionColor = const Color(0xFF5F5FA7).withOpacity(0.6);
 
 final divider = Divider(color: white.withOpacity(0.3), height: 1);
@@ -14,12 +16,13 @@ final divider = Divider(color: white.withOpacity(0.3), height: 1);
 class SidebarWidget extends StatelessWidget {
   const SidebarWidget({
     Key? key,
+    required this.extended,
   }) : super(key: key);
-
+  final bool extended;
   @override
   Widget build(BuildContext context) {
     return SidebarX(
-      controller: sidebarXController,
+      controller: sidebarXController(extended),
       theme: SidebarXTheme(
         // margin: const EdgeInsets.all(10),
         decoration: const BoxDecoration(
@@ -66,16 +69,14 @@ class SidebarWidget extends StatelessWidget {
         return Container(
           margin: const EdgeInsets.all(20.0),
           child: ElevatedButton(
-            style: extended
-                ? ButtonStyle(
-                    padding: MaterialStateProperty.all(
-                      const EdgeInsets.symmetric(
-                        horizontal: 48,
-                        vertical: 16,
-                      ),
-                    ),
-                  )
-                : null,
+            style: ButtonStyle(
+              padding: MaterialStateProperty.all(
+                EdgeInsets.symmetric(
+                  horizontal: extended ? 48 : 0,
+                  vertical: extended ? 16 : 0,
+                ),
+              ),
+            ),
             onPressed: () {},
             child: extended
                 ? const Text(
