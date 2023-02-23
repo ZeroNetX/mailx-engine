@@ -9,7 +9,7 @@ class InboxMessageList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       var msgs = siteController.messagesReceived;
-      var _ = siteController.profileContacts;
+      var _ = siteController.profileContacts.length;
       msgs.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
       return ListView.builder(
         controller: ScrollController(),

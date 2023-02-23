@@ -19,9 +19,7 @@ void init() async {
     siteController.updateSiteInfo(siteInfo);
     if (siteInfo.certUserId?.isNotEmpty ?? false) {
       siteController.isUserLoggedIn.value = true;
-      siteController.user = MessageStore(
-        siteInfo.authAddress!,
-      );
+      siteController.user = MessageStore(authAddress: siteInfo.authAddress!);
       await loadMessages();
       await loadMessagesSent();
       await getUsernames(siteController.contactAddrs);
@@ -51,6 +49,9 @@ void onMessage(message) {
               userFile.replaceFirst(RegExp(r'1\w+'), '');
           if (dataOrContentJsonFile == "/data.json") {}
         }
+      } else if (name == 'cert_changed' && param.isNotEmpty) {
+        init();
+        siteController.isUserLoggedIn.value = true;
       } else {
         debugPrint('Event Message : $name :: $param');
       }

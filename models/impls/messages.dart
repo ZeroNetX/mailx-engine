@@ -3,15 +3,15 @@ import '../interfaces/secret_store.dart';
 import '../profile.dart';
 
 class MessageStore extends SecretStoreInterface {
-  final String authAddress;
-  final String fileName = 'data.json';
   final SecretStoreMap dataMap = {
     'secrets_sent': "",
     'secret': {},
     'messages': {},
   };
 
-  MessageStore(this.authAddress) : super(authAddress, 'data.json') {
+  MessageStore({
+    required String authAddress,
+  }) : super(authAddress, 'data.json') {
     super.data = dataMap;
   }
 
@@ -46,8 +46,9 @@ class MessageStore extends SecretStoreInterface {
     final encryptedMsg = encrypted[2];
     if (data['message'].keys.isEmpty) {
       data['message'] = {"$index": "$iv,$encryptedMsg"};
-    } else
+    } else {
       data['message']["$index"] = "$iv,$encryptedMsg";
+    }
 
     return true;
   }

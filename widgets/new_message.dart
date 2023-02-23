@@ -10,11 +10,17 @@ class NewMessageComposer extends StatelessWidget {
     TextEditingController bodyCtrl = TextEditingController();
     return LayoutBuilder(
       builder: (layoutContext, costrains) {
+        final deviceSize = MediaQuery.of(layoutContext).size;
         final size = Size(
-          MediaQuery.of(layoutContext).size.width * 0.5,
-          MediaQuery.of(layoutContext).size.height * 0.8,
+          deviceSize.width *
+              (deviceSize.width > 800
+                  ? deviceSize.width > 1200
+                      ? 0.45
+                      : 0.6
+                  : 0.75),
+          deviceSize.height * 0.8,
         );
-
+        final showComposer = siteController.showNewMessageComposer.value;
         return Obx(() {
           return Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -24,13 +30,13 @@ class NewMessageComposer extends StatelessWidget {
                 curve: decelerateEasing,
                 duration: const Duration(milliseconds: 400),
                 width: size.width,
-                height: mailUiController.showNewMessageComposer.value
+                height: siteController.showNewMessageComposer.value
                     ? size.height
                     : 0,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   color: Colors.white,
-                  boxShadow: mailUiController.showNewMessageComposer.value
+                  boxShadow: showComposer
                       ? const [
                           BoxShadow(
                             blurRadius: 1,
@@ -43,16 +49,17 @@ class NewMessageComposer extends StatelessWidget {
                 ),
                 child: FutureBuilder(
                   future: Future.delayed(
-                    const Duration(milliseconds: 300),
+                    const Duration(milliseconds: 250),
                   ),
                   builder: (context, snp) {
                     if (snp.connectionState == ConnectionState.waiting) {
                       return const SizedBox();
                     }
+                    final showComposer =
+                        siteController.showNewMessageComposer.value;
                     return AnimatedOpacity(
-                      duration: Duration(milliseconds: 500),
-                      opacity:
-                          mailUiController.showNewMessageComposer.value ? 1 : 0,
+                      duration: const Duration(milliseconds: 250),
+                      opacity: showComposer ? 1 : 0,
                       child: Column(
                         children: [
                           Container(
@@ -64,6 +71,18 @@ class NewMessageComposer extends StatelessWidget {
                               ),
                             ),
                             height: 60,
+                            child: Row(
+                              children: [
+                                const Spacer(),
+                                IconButton(
+                                  onPressed: siteController.toggleNewMsgDialog,
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                  ),
+                                ).paddingOnly(right: 10)
+                              ],
+                            ),
                           ),
                           const SizedBox(
                             height: 10,
@@ -154,12 +173,20 @@ class NewMessageComposer extends StatelessWidget {
                                         (element) =>
                                             element.id == toTextCtrl.text,
                                       );
-                                      siteController.user
-                                          .sendMessage(profile, mail);
+                                      siteController.user.sendMessage(
+                                        profile,
+                                        mail,
+                                      );
+                                      subjTextCtrl.clear();
+                                      bodyCtrl.clear();
+                                      toTextCtrl.clear();
+                                      siteController.toggleNewMsgDialog();
                                     },
                                     child: const Padding(
                                       padding: EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 16),
+                                        vertical: 8,
+                                        horizontal: 16,
+                                      ),
                                       child: Text('Send'),
                                     ),
                                   ),
@@ -185,12 +212,13 @@ class NewMessageComposer extends StatelessWidget {
 }
 
 class MessageFields extends StatelessWidget {
-  const MessageFields(
-      {super.key,
-      required this.size,
-      required this.textType,
-      required this.hintText,
-      this.textController});
+  const MessageFields({
+    super.key,
+    required this.size,
+    required this.textType,
+    required this.hintText,
+    this.textController,
+  });
 
   final Size size;
   final String textType;

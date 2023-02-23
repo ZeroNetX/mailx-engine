@@ -14,7 +14,7 @@ class ZeroMailX extends StatelessWidget {
       home: Scaffold(
         body: Obx(
           () {
-            var isUserLoggedIn = siteController.isUserLoggedIn.value;
+            final isUserLoggedIn = siteController.isUserLoggedIn.value;
             return Column(
               children: [
                 if (isUserLoggedIn) const HeaderWidget(),
