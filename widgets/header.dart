@@ -14,15 +14,16 @@ class HeaderWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: const [
-          Text(
+        children: [
+          const Text(
             "ZeroMailX",
             style: TextStyle(
               color: Colors.white,
               fontSize: 20.0,
+              fontWeight: FontWeight.bold,
             ),
-          ),
-          Spacer()
+          ).paddingSymmetric(horizontal: 30),
+          const Spacer()
         ],
       ),
     );
