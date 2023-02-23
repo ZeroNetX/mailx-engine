@@ -9,6 +9,7 @@ class InboxMessageList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       var msgs = siteController.messagesReceived;
+      var _ = siteController.profileContacts;
       msgs.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
       return ListView.builder(
         controller: ScrollController(),
@@ -16,7 +17,12 @@ class InboxMessageList extends StatelessWidget {
         itemCount: msgs.length,
         itemBuilder: (context, index) {
           var msg = msgs[index];
-          var from = siteController.contacts[msg.directory]!.replaceAll(
+          final profile = siteController.profileContacts[msg.directory];
+          if (profile == null) {
+            return const SizedBox();
+          }
+
+          var from = profile.id.replaceAll(
             '@zeroid.bit',
             '',
           );
