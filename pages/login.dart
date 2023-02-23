@@ -41,9 +41,10 @@ class LoginPage extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await ZeroNet.instance.connect(admin, override: true);
-              final msg = await ZeroNet.instance.certListFuture();
-              await ZeroNet.instance.certSetFuture('zeroid.bit');
+              showZeroNetxDialog(context);
+              // await ZeroNet.instance.connect(admin, override: true);
+              // final msg = await ZeroNet.instance.certListFuture();
+              // await ZeroNet.instance.certSetFuture('zeroid.bit');
               // showDialog(context: context, builder: (context) {
               //   return const LoginDialog();
               // });

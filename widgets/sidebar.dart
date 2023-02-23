@@ -1,3 +1,5 @@
+import 'package:zeromailx/mailx-engine/widgets/new_message_dialog.dart';
+
 import '../imports.dart';
 
 const primaryColor = Color(0xff1b1340);
@@ -24,7 +26,6 @@ class SidebarWidget extends StatelessWidget {
     return SidebarX(
       controller: sidebarXController(extended),
       theme: SidebarXTheme(
-        // margin: const EdgeInsets.all(10),
         decoration: const BoxDecoration(
           color: Color(0xff1b1340),
           // borderRadius: BorderRadius.circular(20),
@@ -58,6 +59,7 @@ class SidebarWidget extends StatelessWidget {
       ),
       extendedTheme: const SidebarXTheme(
         width: 240,
+        padding: EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           color: Color(0xff1b1340),
         ),
@@ -67,17 +69,20 @@ class SidebarWidget extends StatelessWidget {
       footerDivider: divider,
       headerBuilder: (context, extended) {
         return Container(
-          margin: const EdgeInsets.all(20.0),
+          margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
           child: ElevatedButton(
             style: ButtonStyle(
               padding: MaterialStateProperty.all(
                 EdgeInsets.symmetric(
-                  horizontal: extended ? 48 : 0,
-                  vertical: extended ? 16 : 0,
+                  horizontal: extended ? 46 : 0,
+                  vertical: extended ? 20 : 0,
                 ),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              mailUiController.showNewMessageComposer.value =
+                  !mailUiController.showNewMessageComposer.value;
+            },
             child: extended
                 ? const Text(
                     "New Message",

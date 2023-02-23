@@ -1,4 +1,7 @@
+import 'package:zeromailx/mailx-engine/models/impls/messages.dart';
+
 import '../imports.dart';
+import '../models/profile.dart';
 
 final siteController = SiteVarController();
 
@@ -7,12 +10,13 @@ class SiteVarController extends GetxController {
   var siteInfo = Rx<SiteInfo?>(null);
   var isUserLoggedIn = false.obs;
   var contactAddrs = <String>[].obs;
-  var contacts = <String, String>{}.obs;
+  // var contacts = <String, String>{}.obs;
+  var profileContacts = <String, Profile>{}.obs;
   var messagesReceived = <EncryptedMsg>[].obs;
   var messagesSent = <EncryptedMsg>[].obs;
   var messagesReceivedRead = <int>[].obs;
   var currentMessage = Mail.empty().obs;
-
+  late MessageStore user;
   var routes = [
     Route.inbox,
     Route.outbox,

@@ -1,4 +1,6 @@
 import '../imports.dart';
+import '../models/impls/messages.dart';
+import '../models/profile.dart';
 
 const admin = "1HELLoE3sFD9569CLCbHEAVqvqV7U2Ri9d";
 const site = "1MaiLX6j5MSddyu8oh5CxxGrhMcSmRo6N8";
@@ -9,15 +11,51 @@ late StoreRef store;
 void init() async {
   db = await getDatabase();
   store = StoreRef.main();
-  await ZeroNet.instance.connect(site);
-  final siteInfo = (await ZeroNet.instance.siteInfoFuture());
-  siteController.updateSiteInfo(siteInfo);
-  if (siteInfo.certUserId?.isNotEmpty ?? false) {
-    siteController.isUserLoggedIn.value = true;
-    await loadMessages();
-    await loadMessagesSent();
-    await getUsernames(siteController.contactAddrs);
+  await ZeroNet.instance.connect(site, onEventMessage: onMessage);
+  await ZeroNet.instance.channelJoinFuture(['siteChanged']);
+  final siteInfoResult = (await ZeroNet.instance.siteInfoFuture());
+  if (siteInfoResult.isMsg) {
+    var siteInfo = siteInfoResult.message!.siteInfo;
+    siteController.updateSiteInfo(siteInfo);
+    if (siteInfo.certUserId?.isNotEmpty ?? false) {
+      siteController.isUserLoggedIn.value = true;
+      siteController.user = MessageStore(
+        siteInfo.authAddress!,
+      );
+      await loadMessages();
+      await loadMessagesSent();
+      await getUsernames(siteController.contactAddrs);
+    }
   }
+}
+
+void onMessage(message) {
+  var msg = jsonDecode(message);
+  var msg2 = msg['params'];
+  if (msg2 is Map) {
+    if (msg2['event'] is List) {
+      final event = msg2['event'];
+
+      final name = event[0];
+      final param = event[1];
+
+      if (name == 'file_done') {
+        var path = param.toString();
+
+        var pattern = 'data/users/';
+
+        if (path.startsWith('${pattern}1') && path.endsWith('.json')) {
+          debugPrint('User Data Changed');
+          final userFile = path.replaceFirst(pattern, '');
+          final dataOrContentJsonFile =
+              userFile.replaceFirst(RegExp(r'1\w+'), '');
+          if (dataOrContentJsonFile == "/data.json") {}
+        }
+      } else {
+        debugPrint('Event Message : $name :: $param');
+      }
+    } else if (msg['cmd'] == 'peerReceive') {}
+  } else {}
 }
 
 loadMessages() async {
@@ -79,6 +117,8 @@ decryptNewMsgs(List<SecretResult> msgs) async {
   }
 }
 
+// to decrypt messages sent
+
 decryptMsgsSent() async {
   final authAddr = siteController.siteInfo.value!.authAddress!;
   final where = 'WHERE directory = "$authAddr"';
@@ -93,9 +133,9 @@ decryptMsgsSent() async {
     final List<EncryptedMsg> messages = List.from(
       res.message!.result.map((element) => EncryptedMsg.fromJson(element)),
     );
-    final user = User("", "");
-    await user.loadData(authAddr);
-    final secrets = await user.getDecryptedSecretsSent();
+
+    await siteController.user.loadData();
+    final secrets = await siteController.user.getDecryptedSecretsSent();
     final encrytedMsgs = messages.map((e) => e.encrypted.split(',')).toList();
     final aesKeys = secrets?.values
             .map((key) => (key as String).split(':').last)
@@ -117,7 +157,7 @@ decryptMsgsSent() async {
         }
       }
     }
-  }
+  } else {}
 }
 
 Future<List<SecretResult>?> decrypyNewSecrets([
@@ -136,6 +176,7 @@ Future<List<SecretResult>?> decrypyNewSecrets([
   } else {
     where = '';
   }
+
   var query = """
 			SELECT * FROM secret
 			LEFT JOIN json USING (json_id)
@@ -185,12 +226,26 @@ Future<void> getUsernames(List<String> addrs) async {
   final message = await ZeroNet.instance.dbQueryFuture(query, {
     "directory": addrs,
   });
+  final publicKeysList = await ZeroNet.instance.fileQueryFuture(
+    'data/users/*/data.json',
+    query: 'publickey',
+  );
+
   if (!message.isMsg) {
     return;
   } else {
     var res = message.message!.result;
     for (var i = 0; i < res?.length; i++) {
-      siteController.contacts[res[i]['directory']] = res[i]['cert_user_id'];
+      final btcAddr = res[i]['directory'];
+      final publicKey = (publicKeysList.result as List).firstWhere(
+        (element) => element['inner_path'] == btcAddr,
+      );
+
+      siteController.profileContacts[btcAddr] = Profile(
+        btcAddress: btcAddr,
+        publicKey: publicKey['value'],
+        id: res[i]['cert_user_id'],
+      );
     }
   }
 }

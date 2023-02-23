@@ -17,6 +17,14 @@ class Mail {
     to = json['to'];
   }
 
+  Map get toJson {
+    return {
+      'subject': subject,
+      'body': body,
+      'to': to,
+    };
+  }
+
   factory Mail.empty() => Mail('', '', '', '');
 
   bool get isEmpty =>
