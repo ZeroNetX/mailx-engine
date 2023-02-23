@@ -49,9 +49,13 @@ void onMessage(message) {
               userFile.replaceFirst(RegExp(r'1\w+'), '');
           if (dataOrContentJsonFile == "/data.json") {}
         }
-      } else if (name == 'cert_changed' && param.isNotEmpty) {
-        init();
-        siteController.isUserLoggedIn.value = true;
+      } else if (name == 'cert_changed') {
+        if (param.isNotEmpty) {
+          init();
+          siteController.isUserLoggedIn.value = true;
+        } else {
+          siteController.isUserLoggedIn.value = false;
+        }
       } else {
         debugPrint('Event Message : $name :: $param');
       }
