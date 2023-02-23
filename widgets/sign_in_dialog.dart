@@ -87,15 +87,15 @@ class CertificatesList extends StatefulWidget {
 
 class _CertificatesListState extends State<CertificatesList> {
   late var res;
-  int selectedIndex = 0;
+  UserID? selectedUserId;
   List<UserID> userIds = [];
-  List<MyUserID> myUserIds = [];
 
   void getUserId() async {
     res = await ZeroNet.instance.certSelectFuture();
     userIds = extractCertSelectDomains(res);
-    for (var obj in userIds) {
-      myUserIds.add(MyUserID.fromUserId(obj));
+    final active = userIds.where((element) => element.active == true);
+    if (active.isNotEmpty) {
+      selectedUserId = active.first;
     }
     setState(() {});
   }
@@ -112,29 +112,20 @@ class _CertificatesListState extends State<CertificatesList> {
       children: [
         Expanded(
           child: ListView.builder(
-            itemCount: myUserIds.length,
+            itemCount: userIds.length,
             itemBuilder: (context, index) {
-              MyUserID userId = myUserIds.elementAt(index);
+              UserID userId = userIds.elementAt(index);
               if (userId.domain.isEmpty) {
                 return const SizedBox();
               }
               return GestureDetector(
                 onTap: () {
-                  selectedIndex = index;
-                  for (var obj in myUserIds) {
-                    if (obj.username == userId.username &&
-                        obj.domain == userId.domain) {
-                      obj.active = true;
-                    } else {
-                      obj.active = false;
-                    }
-                  }
-                  setState(() {
-                    userIds;
-                  });
+                  selectedUserId = userId;
+                  setState(() {});
                 },
                 child: CertificatesListItem(
                   userID: userId,
+                  selected: selectedUserId == userId,
                 ),
               );
             },
@@ -145,36 +136,72 @@ class _CertificatesListState extends State<CertificatesList> {
         ),
         Align(
           alignment: Alignment.bottomCenter,
-          child: ElevatedButton(
-            style: ButtonStyle(
-              // backgroundColor: const MaterialStatePropertyAll(
-              //   Color(0xff6d4aff),
-              // ),
-              shape: MaterialStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (selectedUserId != null)
+                if (selectedUserId!.domain.isNotEmpty && selectedUserId!.active)
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: const MaterialStatePropertyAll(
+                        Colors.redAccent,
+                      ),
+                      shape: MaterialStatePropertyAll(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                    onPressed: () async {
+                      await ZeroNet.instance.respondFuture(
+                        (res.value as Notification).id,
+                        '',
+                      );
+                      // ignore: use_build_context_synchronously
+                      Navigator.pop(context);
+                    },
+                    child: const Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8, horizontal: 30),
+                      child: Text(
+                        'Log Out',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+              ElevatedButton(
+                style: ButtonStyle(
+                  shape: MaterialStatePropertyAll(
+                    RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+                onPressed: (selectedUserId?.domain.isEmpty ?? true)
+                    ? null
+                    : selectedUserId!.active
+                        ? null
+                        : () async {
+                            await ZeroNet.instance.respondFuture(
+                              (res.value as Notification).id,
+                              selectedUserId!.domain,
+                            );
+                            // ignore: use_build_context_synchronously
+                            Navigator.pop(context);
+                          },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 30),
+                  child: Text(
+                    'Continue',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            onPressed: selectedIndex == 0
-                ? null
-                : () async {
-                    await ZeroNet.instance.respondFuture(
-                      (res.value as Notification).id,
-                      myUserIds[selectedIndex].domain,
-                    );
-                    // ignore: use_build_context_synchronously
-                    Navigator.pop(context);
-                  },
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 30),
-              child: Text(
-                'Continue',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            ],
           ),
         )
       ],
@@ -185,13 +212,15 @@ class _CertificatesListState extends State<CertificatesList> {
 class CertificatesListItem extends StatelessWidget {
   const CertificatesListItem({
     required this.userID,
+    required this.selected,
     super.key,
   });
-  final MyUserID userID;
+  final UserID userID;
+  final bool selected;
 
   @override
   Widget build(BuildContext context) {
-    const Color blueColor = true ? Colors.indigo : Color(0xff6d4aff);
+    const Color blueColor = Colors.indigo;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Column(
@@ -200,7 +229,7 @@ class CertificatesListItem extends StatelessWidget {
             width: double.maxFinite,
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
             decoration: BoxDecoration(
-              color: userID.active ? blueColor : Colors.transparent,
+              color: selected ? blueColor : Colors.transparent,
               border: Border.all(color: blueColor, width: 2),
               borderRadius: BorderRadius.circular(8),
             ),
@@ -211,7 +240,7 @@ class CertificatesListItem extends StatelessWidget {
                   overflow: TextOverflow.fade,
                   text: TextSpan(
                     style: TextStyle(
-                      color: userID.active ? Colors.white : Colors.indigo,
+                      color: selected ? Colors.white : Colors.indigo,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -220,7 +249,7 @@ class CertificatesListItem extends StatelessWidget {
                       TextSpan(
                         text: userID.domain,
                         style: TextStyle(
-                          color: userID.active ? Colors.white : blueColor,
+                          color: selected ? Colors.white : blueColor,
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
                         ),
@@ -236,16 +265,17 @@ class CertificatesListItem extends StatelessWidget {
                   maxLines: 2,
                   text: TextSpan(
                     style: TextStyle(
-                      color: userID.active ? Colors.white : Colors.indigo,
+                      color: selected ? Colors.white : Colors.indigo,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
-                    text: "User Id : ",
+                    text: "User ID  : ",
                     children: [
                       TextSpan(
-                        text: userID.username,
+                        text:
+                            userID.username.replaceAll('@${userID.domain}', ''),
                         style: TextStyle(
-                          color: userID.active ? Colors.white : blueColor,
+                          color: selected ? Colors.white : blueColor,
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
                         ),
@@ -258,26 +288,6 @@ class CertificatesListItem extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class MyUserID {
-  final String domain;
-  final String username;
-  bool active;
-
-  MyUserID({
-    required this.domain,
-    required this.username,
-    required this.active,
-  });
-
-  factory MyUserID.fromUserId(UserID userID) {
-    return MyUserID(
-      domain: userID.domain,
-      username: userID.username,
-      active: userID.active,
     );
   }
 }
