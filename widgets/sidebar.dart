@@ -1,5 +1,3 @@
-import 'package:zeromailx/mailx-engine/widgets/new_message_dialog.dart';
-
 import '../imports.dart';
 
 const primaryColor = Color(0xff1b1340);
@@ -79,10 +77,7 @@ class SidebarWidget extends StatelessWidget {
                 ),
               ),
             ),
-            onPressed: () {
-              mailUiController.showNewMessageComposer.value =
-                  !mailUiController.showNewMessageComposer.value;
-            },
+            onPressed: siteController.toggleNewMsgDialog,
             child: extended
                 ? const Text(
                     "New Message",

@@ -11,9 +11,7 @@ abstract class SecretStoreInterface {
     this.fileName,
   );
 
-  SecretStoreMap _data = {};
-  SecretStoreMap get data => _data;
-  set data(SecretStoreMap data) => _data = data;
+  SecretStoreMap data = {};
 
   String innerPath([
     String fileName = 'data.json',
@@ -51,7 +49,7 @@ abstract class SecretStoreInterface {
       data['secret']["$index"] = secret.result;
     }
     final base64Index = base64.encode(utf8.encode("$index"));
-    secretsSent[userAddress] = base64.encode(utf8.encode('$base64Index:$key'));
+    secretsSent[userAddress] = "$base64Index:$key";
     final secretSentEncrypted = await ZeroNet.instance.eciesEncryptFuture(
       json.encode(secretsSent),
       publicKey: 0,
@@ -80,11 +78,8 @@ abstract class SecretStoreInterface {
       return aesKey;
     } else {
       final base64Index = secretsSent[userAddress];
-      var last = base64Index.split(':').last;
-      print(last);
-      final index = base64.decode(last);
-      var decode = utf8.decode(index);
-      return decode;
+      var key = base64Index.split(':').last;
+      return key;
     }
   }
 

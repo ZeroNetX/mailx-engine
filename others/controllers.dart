@@ -6,18 +6,19 @@ import '../models/profile.dart';
 final siteController = SiteVarController();
 
 class SiteVarController extends GetxController {
-  var currentRoute = Route.inbox.obs;
-  var siteInfo = Rx<SiteInfo?>(null);
-  var isUserLoggedIn = false.obs;
-  var contactAddrs = <String>[].obs;
-  // var contacts = <String, String>{}.obs;
-  var profileContacts = <String, Profile>{}.obs;
-  var messagesReceived = <EncryptedMsg>[].obs;
-  var messagesSent = <EncryptedMsg>[].obs;
-  var messagesReceivedRead = <int>[].obs;
-  var currentMessage = Mail.empty().obs;
+  final currentRoute = Route.inbox.obs;
+  final siteInfo = Rx<SiteInfo?>(null);
+  final isUserLoggedIn = false.obs;
+  final showNewMessageComposer = false.obs;
+  final contactAddrs = <String>[].obs;
+  // final contacts = <String, String>{}.obs;
+  final profileContacts = <String, Profile>{}.obs;
+  final messagesReceived = <EncryptedMsg>[].obs;
+  final messagesSent = <EncryptedMsg>[].obs;
+  final messagesReceivedRead = <int>[].obs;
+  final currentMessage = Mail.empty().obs;
   late MessageStore user;
-  var routes = [
+  final routes = [
     Route.inbox,
     Route.outbox,
     // Route.contacts,
@@ -58,5 +59,10 @@ class SiteVarController extends GetxController {
 
   void updateSiteInfo(SiteInfo siteInfo) {
     this.siteInfo.value = siteInfo;
+  }
+
+  void toggleNewMsgDialog() {
+    siteController.showNewMessageComposer.value =
+        !siteController.showNewMessageComposer.value;
   }
 }
