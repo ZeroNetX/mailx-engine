@@ -63,7 +63,7 @@ class SidebarWidget extends StatelessWidget {
         ),
         // margin: EdgeInsets.only(right: 10),
       ),
-      showToggleButton: false,
+      showToggleButton: true,
       footerDivider: divider,
       headerBuilder: (context, extended) {
         return Container(
@@ -89,9 +89,36 @@ class SidebarWidget extends StatelessWidget {
           ),
         );
       },
+      footerBuilder: (context, extended) {
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+          child: ElevatedButton(
+            style: ButtonStyle(
+              padding: MaterialStateProperty.all(
+                EdgeInsets.symmetric(
+                  horizontal: extended ? 46 : 0,
+                  vertical: extended ? 20 : 0,
+                ),
+              ),
+              backgroundColor: MaterialStateProperty.all(Colors.blueGrey),
+            ),
+            onPressed: () {
+              showZeroNetxDialog(context);
+            },
+            child: extended
+                ? const Text(
+                    "Switch Account",
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.swap_horiz_rounded),
+          ),
+        );
+      },
       items: siteController.routes.map((element) {
         return SidebarXItem(
-          label: element.label,
+          label: extended ? element.label : null,
           icon: element.icon,
           onTap: element.onTap,
         );
