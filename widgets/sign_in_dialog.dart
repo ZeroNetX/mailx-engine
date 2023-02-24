@@ -86,12 +86,14 @@ class CertificatesList extends StatefulWidget {
 }
 
 class _CertificatesListState extends State<CertificatesList> {
-  late var res;
+  late PromptResult res;
   UserID? selectedUserId;
   List<UserID> userIds = [];
 
   void getUserId() async {
-    res = await ZeroNet.instance.certSelectFuture();
+    res = await ZeroNet.instance.certSelectFuture(
+      accepted_domains: ['zeroid.bit'],
+    );
     userIds = extractCertSelectDomains(res);
     final active = userIds.where((element) => element.active == true);
     if (active.isNotEmpty) {
@@ -173,6 +175,11 @@ class _CertificatesListState extends State<CertificatesList> {
                   ),
               ElevatedButton(
                 style: ButtonStyle(
+                  backgroundColor: MaterialStatePropertyAll(
+                    selectedUserId?.registered ?? true
+                        ? Colors.indigo
+                        : Colors.green,
+                  ),
                   shape: MaterialStatePropertyAll(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
@@ -183,21 +190,25 @@ class _CertificatesListState extends State<CertificatesList> {
                     ? null
                     : selectedUserId!.active
                         ? null
-                        : () async {
-                            await ZeroNet.instance.respondFuture(
-                              (res.value as Notification).id,
-                              selectedUserId!.domain,
-                            );
-                            // ignore: use_build_context_synchronously
-                            Navigator.pop(context);
-                          },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 30),
+                        : !selectedUserId!.registered
+                            ? () {}
+                            : () async {
+                                Navigator.pop(context);
+                                await ZeroNet.instance.respondFuture(
+                                  (res.value as Notification).id,
+                                  selectedUserId!.domain,
+                                );
+                              },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 30,
+                  ),
                   child: Text(
-                    'Continue',
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
+                    selectedUserId?.registered ?? true
+                        ? 'Continue'
+                        : 'Register',
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -272,8 +283,12 @@ class CertificatesListItem extends StatelessWidget {
                     text: "User ID  : ",
                     children: [
                       TextSpan(
-                        text:
-                            userID.username.replaceAll('@${userID.domain}', ''),
+                        text: userID.username.isNotEmpty
+                            ? userID.username.replaceAll(
+                                '@${userID.domain}',
+                                '',
+                              )
+                            : 'Yet to be Registered',
                         style: TextStyle(
                           color: selected ? Colors.white : blueColor,
                           fontSize: 15,
