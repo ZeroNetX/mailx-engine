@@ -176,9 +176,11 @@ class _CertificatesListState extends State<CertificatesList> {
               ElevatedButton(
                 style: ButtonStyle(
                   backgroundColor: MaterialStatePropertyAll(
-                    selectedUserId?.registered ?? true
-                        ? Colors.indigo
-                        : Colors.green,
+                    selectedUserId?.active ?? false
+                        ? Colors.grey
+                        : selectedUserId?.registered ?? true
+                            ? Colors.indigo
+                            : Colors.green,
                   ),
                   shape: MaterialStatePropertyAll(
                     RoundedRectangleBorder(
