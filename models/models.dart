@@ -61,7 +61,7 @@ class SecretResult {
   }
 }
 
-class EncryptedMsg {
+class EncryptedMsg extends Equatable {
   late int dateAdded;
   late String encrypted;
   late int jsonId;
@@ -89,6 +89,10 @@ class EncryptedMsg {
     this.body = body;
     return this;
   }
+
+  @override
+  List<Object?> get props =>
+      [dateAdded, encrypted, jsonId, directory, fileName, body];
 }
 
 enum Route {

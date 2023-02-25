@@ -1,7 +1,4 @@
-import 'package:zeromailx/mailx-engine/models/impls/messages.dart';
-
 import '../imports.dart';
-import '../models/profile.dart';
 
 final siteController = SiteVarController();
 
@@ -42,19 +39,25 @@ class SiteVarController extends GetxController {
   }
 
   void addMessagesReceived(List<EncryptedMsg> messages) {
+    messages.removeWhere((element) => messagesReceived.contains(element));
     messagesReceived.addAll(messages);
   }
 
   void addMessageReceived(EncryptedMsg message) {
-    messagesReceived.add(message);
+    if (!messagesReceived.contains(message)) {
+      messagesReceived.add(message);
+    }
   }
 
   void addMessagesSent(List<EncryptedMsg> messages) {
+    messages.removeWhere((element) => messagesSent.contains(element));
     messagesSent.addAll(messages);
   }
 
   void addMessageSent(EncryptedMsg message) {
-    messagesSent.add(message);
+    if (!messagesSent.contains(message)) {
+      messagesSent.add(message);
+    }
   }
 
   void updateSiteInfo(SiteInfo siteInfo) {

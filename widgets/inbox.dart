@@ -8,7 +8,7 @@ class InboxMessageList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      var msgs = siteController.messagesReceived;
+      var msgs = siteController.messagesReceived.value;
       var _ = siteController.profileContacts.length;
       msgs.sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
       return ListView.builder(
@@ -60,6 +60,7 @@ class InboxMessageList extends StatelessWidget {
                   participant: from,
                   isRead: isRead,
                   subject: subject,
+                  epoch: msgs[index].dateAdded,
                 );
               },
             ),

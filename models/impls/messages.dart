@@ -1,12 +1,10 @@
 import '../../imports.dart';
-import '../interfaces/secret_store.dart';
-import '../profile.dart';
 
 class MessageStore extends SecretStoreInterface {
   final SecretStoreMap dataMap = {
     'secrets_sent': "",
     'secret': {},
-    'messages': {},
+    'message': {},
   };
 
   MessageStore({
@@ -39,11 +37,15 @@ class MessageStore extends SecretStoreInterface {
     await saveData();
   }
 
-  bool addMessage(List<String> encrypted) {
+  Future<bool> addMessage(List<String> encrypted) async {
     var index = getNewIndex('message');
     final _ = encrypted[0];
     final iv = encrypted[1];
     final encryptedMsg = encrypted[2];
+    if (data['date_added'] == null) {
+      data['date_added'] = DateTime.now().millisecondsSinceEpoch;
+    }
+
     if (data['message'].keys.isEmpty) {
       data['message'] = {"$index": "$iv,$encryptedMsg"};
     } else {

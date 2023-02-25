@@ -7,12 +7,14 @@ class MessageListItem extends StatelessWidget {
     required this.participant,
     required this.isRead,
     required this.subject,
+    required this.epoch,
   }) : super(key: key);
 
   final bool isSelected;
   final String participant;
   final bool isRead;
   final String subject;
+  final int epoch;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +72,14 @@ class MessageListItem extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                Text(
+                  epoch.getTimeStamp,
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : null,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                )
               ],
             ),
           ),

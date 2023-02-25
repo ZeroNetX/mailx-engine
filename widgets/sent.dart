@@ -28,6 +28,7 @@ class SentMessageList extends StatelessWidget {
                     siteController.currentMessage.value == message;
                 return MessageListItem(
                   isSelected: isSelected,
+                  epoch: msgs[index].dateAdded,
                   participant: to,
                   isRead: false,
                   subject: subject,

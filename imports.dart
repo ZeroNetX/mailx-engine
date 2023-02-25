@@ -4,6 +4,7 @@ export 'dart:math';
 export 'package:flutter/material.dart' hide Route, Notification;
 export 'package:flutter/foundation.dart';
 
+export 'package:equatable/equatable.dart';
 export 'package:get/get.dart' hide Progress;
 export 'package:sembast/sembast.dart';
 export 'package:sidebarx/sidebarx.dart';
@@ -14,9 +15,13 @@ export 'package:zeronet_ws/extensions/core/utils.dart';
 
 export 'others/common.dart';
 export 'others/controllers.dart';
+export 'others/extensions.dart';
 export 'others/store.dart';
 
+export 'models/impls/messages.dart';
+export 'models/interfaces/secret_store.dart';
 export 'models/models.dart';
+export 'models/profile.dart';
 
 export 'pages/home.dart';
 export 'pages/login.dart';
