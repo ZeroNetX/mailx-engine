@@ -21,108 +21,123 @@ class SidebarWidget extends StatelessWidget {
   final bool extended;
   @override
   Widget build(BuildContext context) {
-    return SidebarX(
-      controller: sidebarXController(extended),
-      theme: SidebarXTheme(
-        decoration: const BoxDecoration(
-          color: Color(0xff1b1340),
-          // borderRadius: BorderRadius.circular(20),
-        ),
-        textStyle: const TextStyle(color: Colors.white),
-        selectedTextStyle: const TextStyle(color: Colors.white),
-        itemTextPadding: const EdgeInsets.only(left: 30),
-        selectedItemTextPadding: const EdgeInsets.only(left: 30),
-        itemDecoration: BoxDecoration(
-          border: Border.all(color: const Color(0xff1b1340)),
-        ),
-        selectedItemDecoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: actionColor.withOpacity(0.37),
+    return LayoutBuilder(builder: (context, constrains) {
+      return SidebarX(
+        controller: sidebarXController(extended),
+        theme: SidebarXTheme(
+          decoration: const BoxDecoration(
+            color: Color(0xff1b1340),
+            // borderRadius: BorderRadius.circular(20),
           ),
-          gradient: const LinearGradient(
-            colors: [accentCanvasColor, canvasColor],
+          textStyle: const TextStyle(color: Colors.white),
+          selectedTextStyle: const TextStyle(color: Colors.white),
+          itemTextPadding: const EdgeInsets.only(left: 30),
+          selectedItemTextPadding: const EdgeInsets.only(left: 30),
+          itemDecoration: BoxDecoration(
+            border: Border.all(
+              color: const Color(0xff1b1340),
+            ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.28),
-              blurRadius: 30,
-            )
-          ],
+          selectedItemDecoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: actionColor.withOpacity(0.37),
+            ),
+            gradient: const LinearGradient(
+              colors: [accentCanvasColor, canvasColor],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.28),
+                blurRadius: 30,
+              )
+            ],
+          ),
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+            size: 20,
+          ),
         ),
-        iconTheme: const IconThemeData(
-          color: Colors.white,
-          size: 20,
+        extendedTheme: const SidebarXTheme(
+          width: 240,
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: Color(0xff1b1340),
+          ),
+          // margin: EdgeInsets.only(right: 10),
         ),
-      ),
-      extendedTheme: const SidebarXTheme(
-        width: 240,
-        padding: EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          color: Color(0xff1b1340),
-        ),
-        // margin: EdgeInsets.only(right: 10),
-      ),
-      showToggleButton: true,
-      footerDivider: divider,
-      headerBuilder: (context, extended) {
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
-          child: ElevatedButton(
-            style: ButtonStyle(
-              padding: MaterialStateProperty.all(
-                EdgeInsets.symmetric(
-                  horizontal: extended ? 46 : 0,
-                  vertical: extended ? 20 : 0,
+        showToggleButton: true,
+        footerDivider: divider,
+        headerBuilder: (context, extended) {
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+            child: ElevatedButton(
+              style: ButtonStyle(
+                padding: MaterialStateProperty.all(
+                  EdgeInsets.symmetric(
+                    horizontal: extended ? 46 : 0,
+                    vertical: extended ? 20 : 0,
+                  ),
                 ),
               ),
-            ),
-            onPressed: siteController.toggleNewMsgDialog,
-            child: extended
-                ? const Text(
-                    "New Message",
-                    style: TextStyle(
-                      color: Colors.white,
+              onPressed: siteController.toggleNewMsgDialog,
+              child: extended
+                  ? const Text(
+                      "New Message",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: Icon(
+                        Icons.add,
+                        size: 18,
+                      ),
                     ),
-                  )
-                : const Icon(Icons.add),
-          ),
-        );
-      },
-      footerBuilder: (context, extended) {
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
-          child: ElevatedButton(
-            style: ButtonStyle(
-              padding: MaterialStateProperty.all(
-                EdgeInsets.symmetric(
-                  horizontal: extended ? 46 : 0,
-                  vertical: extended ? 20 : 0,
+            ),
+          );
+        },
+        footerBuilder: (context, extended) {
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+            child: ElevatedButton(
+              style: ButtonStyle(
+                padding: MaterialStateProperty.all(
+                  EdgeInsets.symmetric(
+                    horizontal: extended ? 40 : 0,
+                    vertical: extended ? 20 : 0,
+                  ),
                 ),
+                backgroundColor: MaterialStateProperty.all(Colors.blueGrey),
               ),
-              backgroundColor: MaterialStateProperty.all(Colors.blueGrey),
-            ),
-            onPressed: () {
-              showZeroNetxDialog(context);
-            },
-            child: extended
-                ? const Text(
-                    "Switch Account",
-                    style: TextStyle(
-                      color: Colors.white,
+              onPressed: () {
+                showZeroNetxDialog(context);
+              },
+              child: extended
+                  ? const Text(
+                      "Switch Account",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.swap_horiz_rounded,
+                      ),
                     ),
-                  )
-                : const Icon(Icons.swap_horiz_rounded),
-          ),
-        );
-      },
-      items: siteController.routes.map((element) {
-        return SidebarXItem(
-          label: extended ? element.label : null,
-          icon: element.icon,
-          onTap: element.onTap,
-        );
-      }).toList(),
-    );
+            ),
+          );
+        },
+        items: siteController.routes.map((element) {
+          return SidebarXItem(
+            label: extended ? element.label : null,
+            icon: element.icon,
+            onTap: element.onTap,
+          );
+        }).toList(),
+      );
+    });
   }
 }

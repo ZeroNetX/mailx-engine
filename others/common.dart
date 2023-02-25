@@ -1,6 +1,4 @@
 import '../imports.dart';
-import '../models/impls/messages.dart';
-import '../models/profile.dart';
 
 const admin = "1HELLoE3sFD9569CLCbHEAVqvqV7U2Ri9d";
 const site = "1MaiLX6j5MSddyu8oh5CxxGrhMcSmRo6N8";
@@ -37,7 +35,7 @@ void onMessage(message) {
       final name = event[0];
       final param = event[1];
 
-      if (name == 'file_done') {
+      if (name == 'file_done' && siteController.siteInfo.value != null) {
         var path = param.toString();
 
         var pattern = 'data/users/';
@@ -47,7 +45,15 @@ void onMessage(message) {
           final userFile = path.replaceFirst(pattern, '');
           final dataOrContentJsonFile =
               userFile.replaceFirst(RegExp(r'1\w+'), '');
-          if (dataOrContentJsonFile == "/data.json") {}
+          if (dataOrContentJsonFile == "/data.json" ||
+              dataOrContentJsonFile == "/content.json") {
+            String dir = userFile.split('/').first;
+            if (dir == siteController.siteInfo.value!.authAddress) {
+              loadMessagesSent();
+            } else {
+              loadMessages(dir);
+            }
+          }
         }
       } else if (name == 'cert_changed') {
         if (param.isNotEmpty) {
@@ -63,8 +69,8 @@ void onMessage(message) {
   } else {}
 }
 
-loadMessages() async {
-  var res = await decrypyNewSecrets();
+loadMessages([String? directory]) async {
+  var res = await decrypyNewSecrets({}, directory);
   if (res != null && res.isNotEmpty) {
     var valid = res.where((element) => element.aesKey != null).toList();
     decryptNewMsgs(valid);
@@ -111,8 +117,9 @@ decryptNewMsgs(List<SecretResult> msgs) async {
                   );
           if (isRead == true) {
             siteController.messagesReceivedRead.addIf(
-              !siteController.messagesReceivedRead
-                  .contains(messages[i].dateAdded),
+              !siteController.messagesReceivedRead.contains(
+                messages[i].dateAdded,
+              ),
               messages[i].dateAdded,
             );
           }
@@ -161,12 +168,21 @@ decryptMsgsSent() async {
           siteController.addMessageSent(messages[i]);
         }
       }
+
+      /// TODO: handle if messages list is empty
+      //  to remove deleted messages, when user data changes from another application
+      // this logic not working, when messages is empty
+      if (siteController.messagesSent.length != messages.length) {
+        siteController.messagesSent
+            .removeWhere((element) => !messages.contains(element));
+      }
     }
   } else {}
 }
 
 Future<List<SecretResult>?> decrypyNewSecrets([
   Map<String, dynamic> lastSecrets = const {},
+  String? directory,
 ]) async {
   var lastParsed = 0;
   var knownAddresses = [];
@@ -181,11 +197,16 @@ Future<List<SecretResult>?> decrypyNewSecrets([
   } else {
     where = '';
   }
+  var directoryWhere = '';
+  if (directory != null) {
+    directoryWhere = "WHERE directory = '$directory'";
+  }
 
   var query = """
 			SELECT * FROM secret
 			LEFT JOIN json USING (json_id)
 			$where
+      $directoryWhere
 			ORDER BY date_added ASC
 		""";
   var res = await ZeroNet.instance.dbQueryFuture(query, {});
@@ -221,15 +242,15 @@ void getArchived() async {
   }
 }
 
-Future<void> getUsernames(List<String> addrs) async {
+Future<List<String>> getUsernames(List<String> addrs) async {
   var query = """
 			SELECT directory, value AS cert_user_id
 			FROM json
 			LEFT JOIN keyvalue USING (json_id)
-			WHERE ? AND file_name = 'content.json' AND key = 'cert_user_id'
+			WHERE ${addrs.isEmpty ? '' : '? AND '} file_name = 'content.json' AND key = 'cert_user_id'
 		""";
   final message = await ZeroNet.instance.dbQueryFuture(query, {
-    "directory": addrs,
+    if (addrs.isNotEmpty) "directory": addrs,
   });
   final publicKeysList = await ZeroNet.instance.fileQueryFuture(
     'data/users/*/data.json',
@@ -237,20 +258,54 @@ Future<void> getUsernames(List<String> addrs) async {
   );
 
   if (!message.isMsg) {
-    return;
+    return [];
   } else {
+    List<String> userIds = [];
     var res = message.message!.result;
     for (var i = 0; i < res?.length; i++) {
-      final btcAddr = res[i]['directory'];
-      final publicKey = (publicKeysList.result as List).firstWhere(
-        (element) => element['inner_path'] == btcAddr,
-      );
-
-      siteController.profileContacts[btcAddr] = Profile(
-        btcAddress: btcAddr,
-        publicKey: publicKey['value'],
-        id: res[i]['cert_user_id'],
-      );
+      if (addrs.isNotEmpty) {
+        final btcAddr = res[i]['directory'];
+        final publicKey = (publicKeysList.result as List).firstWhere(
+          (element) => element['inner_path'] == btcAddr,
+        );
+        siteController.profileContacts[btcAddr] = Profile(
+          btcAddress: btcAddr,
+          publicKey: publicKey['value'],
+          id: res[i]['cert_user_id'],
+        );
+      } else {
+        userIds.add(res[i]['cert_user_id']);
+      }
+    }
+    if (addrs.isEmpty) {
+      return userIds;
     }
   }
+  return [];
+}
+
+Future<Profile?> getProfileFromUserId(String id) async {
+  String query = '''
+    SELECT directory FROM keyvalue
+    LEFT JOIN json USING (json_id)
+    WHERE keyvalue.value = '$id'
+    AND json.file_name = 'content.json'
+''';
+
+  var res = await ZeroNet.instance.dbQueryFuture(query);
+  if (res.isMsg) {
+    String? dir = res.message!.result[0]['directory'];
+    if (dir == null) {
+      assert(false);
+      return null;
+    }
+    var publicKeyResult = await ZeroNet.instance.fileQueryFuture(
+      'data/users/$dir/data.json',
+      query: 'publickey',
+    );
+
+    String publicKey = publicKeyResult.result[0]['value'];
+    return Profile(id: id, publicKey: publicKey, btcAddress: dir);
+  }
+  return null;
 }

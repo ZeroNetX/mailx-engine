@@ -23,6 +23,9 @@ abstract class SecretStoreInterface {
     assert(index.toString().length == 13);
     var found = false;
     while (!found) {
+      if (data[key] == null) {
+        return index;
+      }
       found = data[key][index] ?? true;
       if (!found) index++;
     }
@@ -92,10 +95,13 @@ abstract class SecretStoreInterface {
     if (!message.isMsg) {
       return;
     } else {
-      final dataLoaded = json.decode(message.message!.result);
-      assert(dataLoaded is Map<String, dynamic>);
-      if ((dataLoaded as Map<String, dynamic>).isNotEmpty) {
-        data = dataLoaded;
+      final fileInfo = message.message!.result;
+      if (fileInfo != null) {
+        final dataLoaded = json.decode(fileInfo);
+        assert(dataLoaded is Map<String, dynamic>);
+        if ((dataLoaded as Map<String, dynamic>).isNotEmpty) {
+          data = dataLoaded;
+        }
       }
     }
   }
@@ -103,6 +109,12 @@ abstract class SecretStoreInterface {
   Future<void> saveData() async {
     final innerPathStr = innerPath(fileName);
     var innerdata = <String, dynamic>{};
+    if (data['publickey'] == null) {
+      final publicKeyRes = await ZeroNet.instance.userPublickeyFuture();
+      if (publicKeyRes.result != null) {
+        data['publickey'] = publicKeyRes.result;
+      }
+    }
     for (String key in data.keys) {
       var value = data[key];
       if (value is Map && value.keys.isNotEmpty && value.keys.first is int) {
@@ -126,6 +138,8 @@ abstract class SecretStoreInterface {
     } else {
       final messagePublish = await ZeroNet.instance.sitePublishFuture(
         inner_path: innerPathStr,
+        sign: true,
+        update_changed_files: true,
       );
       if (messagePublish.isErr) {
         return;
